@@ -15,7 +15,7 @@ def main(argv=None):
 	conn.execute('CREATE TABLE IF NOT EXISTS digests (command TEXT PRIMARY KEY, digest TEXT)')
 
 	stdout = tempfile.TemporaryFile()
-	subprocess.call(sys.argv[1:], stdout=stdout, stderr=stdout)
+	subprocess.call(argv, stdout=stdout, stderr=stdout)
 	stdout.seek(0)
 
 	md5 = hashlib.md5()
@@ -25,7 +25,7 @@ def main(argv=None):
 	count = conn.execute(
 		'SELECT COUNT(*) FROM digests WHERE command = ? AND digest = ?',
 		(
-			repr(sys.argv[1:]),
+			repr(argv),
 			md5.hexdigest()
 		)
 	).fetchone()[0]
@@ -37,7 +37,7 @@ def main(argv=None):
 		conn.execute(
 			'INSERT OR REPLACE INTO digests VALUES (?, ?)',
 			(	
-				repr(sys.argv[1:]),
+				repr(argv),
 				md5.hexdigest()
 			)
 		)
