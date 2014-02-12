@@ -11,6 +11,9 @@ def main(argv=None):
 	if argv is None:
 		argv = sys.argv[1:]
 
+	if not argv:
+		return 0
+
 	conn = sqlite3.connect(os.path.join(os.environ['HOME'], '.watchout'))
 	conn.execute('CREATE TABLE IF NOT EXISTS digests (command TEXT PRIMARY KEY, digest TEXT)')
 
