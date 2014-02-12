@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+
+import hashlib
+import os
+import sqlite3
+import subprocess
+import sys
+import tempfile
+
+def main(argv=None):
+	if argv is None:
+		argv = sys.argv[1:]
+
+	conn = sqlite3.connect(os.path.join(os.environ['HOME'], '.watchout'))
+	conn.execute('CREATE TABLE IF NOT EXISTS digests (command TEXT PRIMARY KEY, digest TEXT)')
+
+	stdout = tempfile.TemporaryFile()
+	subprocess.call(sys.argv[1:], stdout=stdout, stderr=stdout)
+	stdout.seek(0)
+
+	md5 = hashlib.md5()
+	for block in iter(lambda: stdout.read(262144), ''):
+		md5.update(block)
+
+	count = conn.execute(
+		'SELECT COUNT(*) FROM digests WHERE command = ? AND digest = ?',
+		(
+			repr(sys.argv[1:]),
+			md5.hexdigest()
+		)
+	).fetchone()[0]
+
+	if count == 0:
+		stdout.seek(0)
+		for block in iter(lambda: stdout.read(262144), ''):
+			sys.stdout.write(block)
+		conn.execute(
+			'INSERT OR REPLACE INTO digests VALUES (?, ?)',
+			(	
+				repr(sys.argv[1:]),
+				md5.hexdigest()
+			)
+		)
+		conn.commit()
+
+	stdout.close()
+	conn.close()
+
+	return 0
+
+if __name__ == "__main__":
+	sys.exit(main())
