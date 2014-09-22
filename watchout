@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import hashlib
 import os
@@ -22,7 +22,7 @@ def main(argv=None):
 	stdout.seek(0)
 
 	md5 = hashlib.md5()
-	for block in iter(lambda: stdout.read(262144), ''):
+	for block in iter(lambda: stdout.read(262144), b''):
 		md5.update(block)
 
 	count = conn.execute(
@@ -35,11 +35,19 @@ def main(argv=None):
 
 	if count == 0:
 		stdout.seek(0)
-		for block in iter(lambda: stdout.read(262144), ''):
-			sys.stdout.write(block)
+
+		try:
+			buffer = sys.stdout.buffer
+			sys.stdout.flush()
+		except AttributeError:
+			buffer = sys.stdout
+
+		for block in iter(lambda: stdout.read(262144), b''):
+			buffer.write(block)
+
 		conn.execute(
 			'INSERT OR REPLACE INTO digests VALUES (?, ?)',
-			(	
+			(
 				repr(argv),
 				md5.hexdigest()
 			)
