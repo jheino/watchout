@@ -17,7 +17,7 @@ Print your IP address if it has changed:
 
 Notify if your system has rebooted:
 
-	watchout awk '/btime/ { print $2 }' /proc/stat
+	watchout awk '/btime/ { print "System rebooted at " strftime("%c", $2) }' /proc/stat
 
 Requirements
 ------------
