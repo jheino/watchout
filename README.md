@@ -24,3 +24,11 @@ Requirements
 
 ``watchout`` requires Python 2.7 or 3.2. Other versions might work, but they 
 have not been tested.
+
+Implementation
+--------------
+
+``watchout`` creates an SQLite database in ``~/.watchout`` where it will store 
+an MD5 digest of the command output. A list representation (e.g. ``['curl', 
+'-qsS', 'http://icanhazip.com/']``) of all the command line arguments is used as 
+the key.
